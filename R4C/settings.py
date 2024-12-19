@@ -128,8 +128,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 load_dotenv()
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.example.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = os.getenv('HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('HOST_PASSWORD')
+EMAIL_HOST_USER = os.getenv('HOST_USER', 'your_email@example.com')
+EMAIL_HOST_PASSWORD = os.getenv('HOST_PASSWORD', 'your_password')

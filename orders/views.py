@@ -18,19 +18,21 @@ def create_order(request):
     Создаём или обновляем заказ на соответствующего робота.
     """
     form = OrderForm(request.POST)
+
     if form.is_valid():
-        customer, _ = Customer.objects.get_or_create(
-            email=form.cleaned_data['email']
-        )
+        customer, _ = Customer.objects.get_or_create(email=form.cleaned_data['email'])
+
         order, _ = Order.objects.update_or_create(
             customer=customer,
             robot_serial=form.cleaned_data['robot_serial'],
             defaults={'is_notified': False}
         )
+
         return JsonResponse(
             {'data': order.to_dict()},
             status=HTTPStatus.CREATED
         )
+
     return JsonResponse(
         {'message': 'Создание заказа не удалось'},
         status=HTTPStatus.BAD_REQUEST
