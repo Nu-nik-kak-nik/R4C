@@ -1,9 +1,11 @@
 import os
 import xlsxwriter
+
 from django.conf import settings
+from django.db.models.query import QuerySet
 
 
-def create_production_list(robots) -> str:
+def create_production_list(robots: QuerySet) -> str:
     """
     Функция для создания xlsx файла со сводной
     информацией о произведенных роботах.
