@@ -1,3 +1,53 @@
-from django.shortcuts import render
+import os
+import json
+from http import HTTPStatus
 
-# Create your views here.
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Robot
+
+from .validators import validate_robot_data
+
+
+@csrf_exempt
+def add_robot(request):
+    """
+        Функция представления для добавления робота.
+
+        Создает робота на основе данных, полученных из запроса.
+        Если указанные модель или версия робота не существуют, возвращается 404.
+        При успешном добавлении робота проверяются заказы покупателей на него.
+        Если такие заказы имеются, заказчикам отправляется уведомление по электронной почте.
+    """
+    try:
+        data = json.loads(request.body)
+
+        if not validate_robot_data(data):
+            return JsonResponse(
+                {'message': 'Полученные данные не соответствуют ожиданиям'},
+                status=HTTPStatus.BAD_REQUEST
+            )
+
+        robot = Robot.objects.create(
+            serial=f'{data["model"]}-{data["version"]}',
+            model=data['model'],
+            version=data['version'],
+            created=data['created']
+        )
+
+        return JsonResponse(
+            {'data': {
+                'serial': robot.serial,
+                'model': robot.model,
+                'version': robot.version,
+                'created': robot.created.isoformat()
+            }},
+            status=HTTPStatus.CREATED
+        )
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=HTTPStatus.BAD_REQUEST)
+    except ValueError as e:
+        return JsonResponse({'error': str(e)}, status=HTTPStatus.BAD_REQUEST)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
