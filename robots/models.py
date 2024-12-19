@@ -11,3 +11,20 @@ class Robot(models.Model):
 
     def __str__(self):
         return f"{self.model}-{self.version}"
+
+
+class Model(models.Model):
+    """Модель представления модели робота"""
+    name = models.CharField(max_length=2, blank=False, null=False)
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+
+class Version(models.Model):
+    """Модель представления версии модели робота"""
+    name = models.CharField(max_length=2, blank=False, null=False)
+    model = models.ForeignKey(Model, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return f"{self.name}"

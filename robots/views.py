@@ -4,11 +4,12 @@ from http import HTTPStatus
 
 from django.http import JsonResponse, HttpResponse, Http404
 from django.db.models import Count
+from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
 from orders.models import Order
-from .models import Robot
+from .models import Robot, Model, Version
 from .validators import validate_robot_data
 from .utils import calculate_days_from_today, notify_customers
 from .excel_utils import create_production_list
@@ -33,11 +34,14 @@ def add_robot(request):
                 status=HTTPStatus.BAD_REQUEST
             )
 
+        model = get_object_or_404(Model, name=data['model'])
+        version = get_object_or_404(Version, name=data['version'], model=model)
+        created = data['created']
         robot = Robot.objects.create(
             serial=f'{data["model"]}-{data["version"]}',
-            model=data['model'],
-            version=data['version'],
-            created=data['created']
+            model=model,
+            version=version,
+            created=created
         )
 
         orders = Order.objects.filter(robot_serial=robot.serial, is_notified=False)
