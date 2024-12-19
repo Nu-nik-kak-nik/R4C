@@ -7,9 +7,10 @@ from django.db.models import Count
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
+from orders.models import Order
 from .models import Robot
 from .validators import validate_robot_data
-from .utils import calculate_days_from_today
+from .utils import calculate_days_from_today, notify_customers
 from .excel_utils import create_production_list
 
 
@@ -38,6 +39,16 @@ def add_robot(request):
             version=data['version'],
             created=data['created']
         )
+
+        orders = Order.objects.filter(robot_serial=robot.serial, is_notified=False)
+        if orders.exists():
+            customer_emails = [order.customer.email for order in orders]
+            notify_customers(
+                emails=customer_emails,
+                robot_model=robot.model,
+                robot_version=robot.version
+            )
+            orders.update(is_notified=True)
 
         return JsonResponse(
             {'data': {
